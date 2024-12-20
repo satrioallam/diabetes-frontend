@@ -9,6 +9,11 @@
                 <p class="lead">Silakan isi data diri Anda untuk melanjutkan ke kuesioner deteksi diabetes.</p>
             </div>
             <div class="card-body">
+                <div class="text-end mb-3">
+                    <button type="button" class="btn btn-secondary" onclick="randomizeForm()">
+                        Isi Random
+                    </button>
+                </div>
                 <form action="{{ route('diabetes.saveUserData') }}" method="POST">
                     @csrf
                     <div class="form-group mb-4">
@@ -66,4 +71,35 @@
         </div>
     </div>
 </div>
+
+<script>
+function randomizeForm() {
+    // Random names (Indonesian names for context)
+    const firstNames = ['Budi', 'Siti', 'Ahmad', 'Dewi', 'Eko', 'Nina', 'Rudi', 'Maya', 'Dian', 'Bambang'];
+    const lastNames = ['Wijaya', 'Sari', 'Putra', 'Wati', 'Susanto', 'Kusuma', 'Pratama', 'Putri', 'Santoso', 'Utami'];
+    
+    // Random cities in Indonesia
+    const cities = ['Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Yogyakarta', 'Malang', 'Palembang', 'Makassar', 'Denpasar'];
+    
+    // Generate random values
+    const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+    const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+    const fullName = `${randomFirstName} ${randomLastName}`;
+    const age = Math.floor(Math.random() * (70 - 18 + 1)) + 18; // Random age between 18-70
+    const gender = Math.floor(Math.random() * 2); // 0 or 1
+    const education = Math.floor(Math.random() * 6) + 1; // 1-6
+    const height = Math.floor(Math.random() * (190 - 150 + 1)) + 150; // Random height between 150-190 cm
+    const weight = Math.floor(Math.random() * (100 - 45 + 1)) + 45; // Random weight between 45-100 kg
+    const city = cities[Math.floor(Math.random() * cities.length)];
+    
+    // Set values to form
+    document.getElementById('name').value = fullName;
+    document.getElementById('usia').value = age;
+    document.getElementById('gender').value = gender;
+    document.getElementById('pendidikan').value = education;
+    document.getElementById('tinggi').value = height;
+    document.getElementById('berat').value = weight;
+    document.getElementById('asal').value = city;
+}
+</script>
 @endsection
