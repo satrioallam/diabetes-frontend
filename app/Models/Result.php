@@ -13,8 +13,9 @@ class Result extends Model
 
     protected $fillable = [
         'user_id',
-        'total_score',
+        'probability',
         'risk_level',
+        'prediction',
         'created_at'
     ];
     public $timestamps = true;

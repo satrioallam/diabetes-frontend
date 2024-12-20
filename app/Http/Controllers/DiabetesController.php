@@ -80,8 +80,6 @@ class DiabetesController extends Controller
                 'answer_value' => $answer_value,
             ]);
         }
-
-        // Hitung total skor dari jawaban
         $totalScore = 10;
 
         // Menentukan level risiko berdasarkan total skor
@@ -89,11 +87,13 @@ class DiabetesController extends Controller
 
 
         // Simpan hasil ke database
-        Result::create([
-            'user_id' => $user_id,
-            'total_score' => $totalScore,
-            'risk_level' => $riskLevel,
-        ]);
+        // Result::create([
+        //     'user_id' => $user_id,
+        //     'probability' => $totalScore,
+        //     'risk_level' => $riskLevel,
+        //     'prediction' => 1,
+        // ]);
+
 
         return redirect()->route('diabetes.result', ['user_id' => $user_id]);
     }
@@ -102,36 +102,49 @@ class DiabetesController extends Controller
     {
         $user = User::findOrFail($user_id);
         $result = Result::where('user_id', $user_id)->first();
+
+        // If the result exists, load it and return the view
+        if ($result) {
+            $predictionData = $result;
+            return view('diabetes_result', compact('user', 'predictionData'));
+        }
+
+        // Initialize predictionData to null or a default error state
+        $predictionData = null;
+        $error = null;
+
+        // If the result doesn't exist, proceed with API call and result creation
         $answers = Answer::where('user_id', $user_id)->get();
 
         // Collect user-specific features
         $data = [
             'Education' => $user->pendidikan_scale_id, // Education level
-            'Age' => $user->usia_scale_id,            // Age category (already mapped correctly)
+            'Age' => $user->usia_scale_id,            // Age category
             'Sex' => $user->gender,                   // Gender
             'BMI' => floatval($user->bmi),            // BMI (convert to float)
         ];
 
         // Mapping of question_id to feature names
         $featureMapping = [
-            1  => 'Smoker',
-            2  => 'HvyAlcoholConsump',
-            3  => 'HighBP',
-            4  => 'HighChol',
-            5  => 'Stroke',
-            6  => 'CholCheck',
-            7  => 'HeartDiseaseorAttack',
-            8  => 'NoDocbcCost',
-            9  => 'AnyHealthcare',
+            1 => 'Smoker',
+            2 => 'HvyAlcoholConsump',
+            3 => 'HighBP',
+            4 => 'HighChol',
+            5 => 'Stroke',
+            6 => 'CholCheck',
+            7 => 'HeartDiseaseorAttack',
+            8 => 'NoDocbcCost',
+            9 => 'AnyHealthcare',
             10 => 'PhysActivity',
             11 => 'DiffWalk',
             12 => 'Fruits',
             13 => 'Veggies',
             14 => 'GenHlth',
+            15 => 'Income',
             16 => 'MentHlth',
-            17 => 'Income',
-            18 => 'PhysHlth',
+            17 => 'PhysHlth',
         ];
+
         // Collect answer-based features
         foreach ($featureMapping as $question_id => $feature) {
             $answer = $answers->where('question_id', $question_id)->first();
@@ -141,7 +154,7 @@ class DiabetesController extends Controller
                 $data[$feature] = 0; // Default value for missing answers
             }
         }
-        // return $data;
+        // return $answers;
 
         // Make a POST request to the Python API
         try {
@@ -149,13 +162,32 @@ class DiabetesController extends Controller
             $response->throw();
 
             $predictionData = $response->json();
-          // return $predictionData;
+          //  return $predictionData;
+            $totalScore = $predictionData["probability"];
+            $riskLevel = $predictionData["risk_level"];
+            $prediction = $predictionData["prediction"];
+          //  return $predictionData;
+            // Create the result in the database
+            Result::create([
+                'user_id' => $user_id,
+                'probability' => $totalScore,
+                'risk_level' => $riskLevel,
+                'prediction' => $prediction,
+            ]);
+
             // Pass the prediction data to the view
             return view('diabetes_result', compact('user', 'result', 'predictionData'));
         } catch (Exception $e) {
-            // Handle the exception, e.g., log it or pass an error message to the view
+            // Handle the exception
             $error = $e->getMessage();
-            return view('diabetes_result', compact('user', 'result', 'error'));
+            // You can also set specific error details in predictionData if needed
+            $predictionData = [
+                'error' => true,
+                'message' => 'An error occurred while processing the prediction.',
+                'details' => $error // Optional: Include detailed error for debugging
+            ];
+            // Since the result wasn't saved due to the error, don't try to pass $result.
+            return view('diabetes_result', compact('user', 'predictionData'));
         }
     }
 
