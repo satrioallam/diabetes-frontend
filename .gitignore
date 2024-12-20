@@ -1,4 +1,5 @@
 .csv
+*.conf
 *.csv
 /.phpunit.cache
 /node_modules
