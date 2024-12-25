@@ -10,11 +10,11 @@
                     <p class="lead">Silakan jawab pertanyaan berikut untuk mengetahui risiko diabetes Anda.</p>
                 </div>
                 <div class="card-body p-5">
-                    <div class="text-end mb-4">
+                    {{-- <div class="text-end mb-4">
                         <button type="button" class="btn btn-secondary" onclick="randomizeAnswers()">
                             Isi Random
                         </button>
-                    </div>
+                    </div> --}}
                     <form action="{{ route('diabetes.saveAnswer', $user_id) }}" method="POST">
                         @csrf
                         @foreach($questions as $index => $question)

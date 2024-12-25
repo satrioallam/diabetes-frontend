@@ -9,11 +9,11 @@
                 <p class="lead">Silakan isi data diri Anda untuk melanjutkan ke kuesioner deteksi diabetes.</p>
             </div>
             <div class="card-body">
-                <div class="text-end mb-3">
+                {{-- <div class="text-end mb-3">
                     <button type="button" class="btn btn-secondary" onclick="randomizeForm()">
                         Isi Random
                     </button>
-                </div>
+                </div> --}}
                 <form action="{{ route('diabetes.saveUserData') }}" method="POST">
                     @csrf
                     <div class="form-group mb-4">
